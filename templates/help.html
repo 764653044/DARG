@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Index</title>
+    <link rel="stylesheet" type="text/css" href="http://127.0.0.1:8000/static/plugins/bootstrap-3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="http://127.0.0.1:8000/static/css/global.css"/>
+    <link rel="stylesheet" type="text/css" href="http://127.0.0.1:8000/static/css/help.css"/>
+    <script type="text/javascript" src="http://127.0.0.1:8000/static/js/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="http://127.0.0.1:8000/static/plugins/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        #background img{
+            text-align: center;
+            width: 600px;
+            margin: 0 0 0 385px;
+        }
+    </style>
+</head>
+
+<body>
+<div id="head">
+    <img src="../static/img/logo.png" alt="Logo"/>
+    <div id="menu1">
+        <ul id="supnav">
+            <li><a href="/index/"><span class="glyphicon glyphicon-home"></span>Home</a></li>
+{#            <li><a href="/search/"><span class="glyphicon glyphicon-eye-open"></span>Search<span class="caret"></span></a>#}
+            <li><a><span class="glyphicon glyphicon-search"></span>Search<span class="caret"></span></a>
+                <div class="browse" id="search">
+                    <a href="/datasetSearch/">Transcriptome data Search</a>
+                    <a href="/geneSearch/">Gene Search</a>
+                    <a href="/methylationSearch/">Methylation data Search</a>
+                </div>
+            </li>
+            <li><a href="/upload/"><span class="glyphicon glyphicon-cloud-upload"></span>Analyse</a></li>
+            <li class="active"><a href="/help/"><span class="glyphicon glyphicon-file"></span>Help</a></li>
+            <li><a><span class="glyphicon glyphicon-download-alt"></span>Download<span class="caret"></span></a>
+                <div class="browse">
+                    <a href="/download/">Transcriptome results</a>
+                    <a href="/methylationdownload/">Methylation results</a>
+                </div>
+            </li>
+            <li><a href="/contact/"><span class="glyphicon glyphicon-earphone"></span>Contact us</a></li>
+        </ul>
+    </div>
+</div>
+<div class="container" id="background">
+    <div id="Navigation">Navigation:</div>
+    <div class="content-head">
+        <a href="#part1">1. Overview of Drug addiction database</a>
+    </div>
+    <div class="content-head">
+        <a href="#part2">2. Search</a>
+    </div>
+    <div class="content-sub-head" style="width: 1000px">
+        <a href="#part2-1" style="font-size: 18px;">2.1 Transcriptome data Search</a>
+    </div>
+    <div class="content-sub-head" style="width: 1000px">
+        <a href="#part2-2" style="font-size: 18px;">2.2 Gene Search</a>
+    </div>
+    <div class="content-sub-head" style="width: 1000px">
+        <a href="#part2-3" style="font-size: 18px;">2.3 Methylation data Search</a>
+    </div>
+    <div class="content-head">
+        <a href="#part3">3. Search result</a>
+    </div>
+    <div class="content-sub-head" style="width: 1000px">
+        <a href="#part3-1" style="font-size: 18px;">3.1 Results of Transcriptome data Search</a>
+    </div>
+    <div class="content-sub-head" style="width: 1000px">
+        <a href="#part3-2" style="font-size: 18px;">3.2 Results of Gene Search</a>
+    </div>
+    <div class="content-sub-head" style="width: 1000px">
+        <a href="#part3-3" style="font-size: 18px;">3.3 Results of Methylation data Search</a>
+    </div>
+     <div class="content-head">
+        <a href="#part4">4. Analyse</a>
+    </div>
+    <div class="content-sub-head" style="width: 1000px">
+        <a href="#part4-1" style="font-size: 18px;">4.1 Upload of gene list</a>
+    </div>
+    <div class="content-sub-head" style="width: 1000px">
+        <a href="#part4-2" style="font-size: 18px;">4.2 Analyse results key genes</a>
+    </div>
+    <div class="content-head">
+        <a href="#part5">5. Download</a>
+    </div>
+    <div class="content-sub-head" style="width: 1000px">
+        <a href="#part5-1" style="font-size: 18px;">5.1 Transcriptome results download</a>
+    </div>
+    <div class="content-sub-head" style="width: 1000px">
+        <a href="#part5-2" style="font-size: 18px;">5.2 Methylation results download</a>
+    </div>
+
+    <div class="line_01"></div>
+    <div id="part1">
+        <div class="content-head">1. Overview of Drug addiction database:</div>
+        <p>Drug addiction is a chronic recurrent brain disease. Its formation mechanism is that individuals repeatedly
+            use drugs.
+            The chemical composition of drugs directly affects the brain, extensively changes the structure and function
+            of the
+            brain's influence on the brain nervous system, and further promotes drug seeking and drug taking behavior,
+            ultimately
+            leading to the occurrence of addiction disorder.</p>
+        <p>Analyzing drug addiction datasets is crucial as it provides important insights into understanding the
+            mechanisms
+            of drug addiction and exploring potential biomarkers of drug addiction.The drug addiction database analyzed
+            and
+            presented multiple datasets of addictive drugs, including human and mouse, distributed in different brain
+            regions.
+            In this database, the differential expression of different addictive drugs in different brain regions can be
+            queried,
+            and a differential gene protein interaction network has been constructed. Twelve different centrality
+            algorithms
+            have been used to calculate the centrality of nodes in the network, and possible key genes have been
+            screened.
+            Finally, enrichment analysis has been conducted on the genes in the network.</p>
+            <img src="../static/img/index.png" />
+    </div>
+    <div id="part2">
+        <div class="content-head">2. Search:</div>
+        <div id="part2-1">
+            <div class="content-sub-head">2.1 Transcriptome data Search:</div>
+                <img src="../static/img/search1.png" />
+        </div>
+        <div id="part2-2">
+            <div class="content-sub-head">2.2 Gene Search:</div>
+                <img src="../static/img/search2.png" />
+        </div>
+        <div id="part2-3">
+            <div class="content-sub-head">2.3 Methylation data Search:</div>
+                <img src="../static/img/search3.png" />
+        </div>
+    </div>
+    <div id="part3">
+        <div class="content-head">3. Result:</div>
+        <div id="part3-1">
+            <div class="content-sub-head">3.1 Results of Transcriptome data Search:</div>
+            <p>Users can choose species, addictive drugs, brain regions,
+                and datasets to obtain analysis results.</p>
+            <p>On this page, we provide differential gene
+                information with different thresholds, volcano maps of differential genes, differential gene interaction
+                networks, centrality algorithm results of networks, and enrichment analysis results. Users can click on
+                the GO and KEGG entries to jump to a detailed introduction of functions and pathways.</p>
+                <p>Differentially expressed genes:</p>
+                <img src="../static/img/DEGs.png"/>
+                <p>Users can click on the corresponding threshold number to view the analysis results of the
+                    corresponding threshold, and click on the icon after the number to see a detailed list of
+                    differentially expressed genes corresponding to the threshold.</p>
+                <p>Volcano plot of differentially expressed genes:</p>
+                <img src="../static/img/volcanoPlot.png"/>
+                <p>Protein–protein interaction network of differentially expressed genes:</p>
+                <img src="../static/img/PPI.png"/>
+            <p>We proposed a centrality algorithm integration strategy to analyze genes in drug addiction-related
+                PPI networks. The scores of the node in network under each centrality algorithm were calculated
+                separately by applying a series of centrality measures, including degree, edge-percolated
+                component (EPC), Laplacian centrality, maximum neighborhood component (MNC), Katz radiality, and
+                semi-local centrality (SLC). The intersection of the top 10% genes of each centrality algorithm was
+                considered the key gene. In the network, red represents key genes.</p>
+                <p>The centrality score of each node in the PPI network:</p>
+                <img src="../static/img/centrality.png"/>
+                <p>Enrichment analysis of each node in the PPI network:</p>
+                <img src="../static/img/GO.png"/>
+                <img src="../static/img/KEGG.png"/>
+            <p>A detailed list of differentially expressed genes, with red indicating that the gene is a key gene.</p>
+                <img src="../static/img/DEGs-list.png"/>
+            <p>Users can click on the differential gene name to obtain detailed information about the gene.</p>
+            <p>Box plot of gene expression levels:</p>
+                <img src="../static/img/boxPlot.png"/>
+            <p>The homologous gene of this gene:</p>
+                <img src="../static/img/homologene.png"/>
+            <p>The expression level of this gene in different brain regions of human:</p>
+                <img src="../static/img/human-brain.png"/>
+            <p>The expression level of this gene in different brain regions of mouse:</p>
+                <img src="../static/img/mouse-brain.png"/>
+            <p>The correlation between this gene and addiction:</p>
+                <img src="../static/img/correlation.png"/>
+            <p>Literature on the relationship between this gene and addiction:</p>
+                <img src="../static/img/literature.png"/>
+        </div>
+        <div id="part3-2">
+            <div class="content-sub-head">3.2 Results of Gene Search:</div>
+                <p>Users can enter gene name query results.</p>
+                <p>At the top of the page are the differential methylation probes results. At the bottom of the page
+                    are the differential expression results. Users can click on the gene name to obtain detailed
+                    information about the gene.</p>
+                <img src="../static/img/gene-search-result.png"/>
+        </div>
+        <div id="part3-3">
+            <div class="content-sub-head">3.3 Results of Methylation data Search:</div>
+            <p>Users can choose addictive drugs, regions, and datasets to obtain methylation analysis results.</p>
+            <p>DMPs and DMRs:</p>
+                <img src="../static/img/dmp-dmr.png"/>
+            <p>Click on the corresponding threshold for DMPs or the method for DMRs to view a detailed list.</p>
+            <p>Volcano plot of DMPs:</p>
+                <img src="../static/img/dmp-volcanoPlot.png"/>
+            <p>GO and KEGG enrichment analysis results:</p>
+                <img src="../static/img/go-kegg.png"/>
+            <p>A detailed list of DMPs:</p>
+            <img src="../static/img/DMPs-detailed.png"/>
+            <p>Users can click on the differential gene name to obtain detailed information about the gene.</p>
+            <img src="../static/img/dmp-gene.png"/>
+            <p>A detailed list of DMRs:</p>
+            <img src="../static/img/DMRs-detailed.png"/>
+            <p>Users can click on the differential gene name to obtain detailed information about the gene.</p>
+            <img src="../static/img/dmr-gene.png"/>
+        </div>
+    </div>
+
+    <div id="part4">
+        <div class="content-head">4. Analyse:</div>
+        <div id="part4-1">
+            <div class="content-sub-head">4.1 Upload of gene list:</div>
+            <p>Users can input a gene list or upload a gene list to obtain analysis results.</p>
+                <img src="../static/img/analyse.png"/>
+            <p>PPI network of uploaded gene lists:</p>
+                <img src="../static/img/analyse-ppi.png"/>
+            <p>The centrality algorithm results of the PPI network for the uploaded gene list:</p>
+                <img src="../static/img/analyse-centrality.png"/>
+            <p>Key gene lists:</p>
+                <img src="../static/img/analyse-key-list.png"/>
+            <p>Click the download button below to download the centrality algorithm results for all genes.
+                Click on the gene name to see the detailed analysis results of that gene.</p>
+        </div>
+        <div id="part4-2">
+            <div class="content-sub-head">4.2 Analysis results of key genes:
+            </div>
+                <p>The homologous gene of this gene:</p>
+                <img src="../static/img/key-homologene.png"/>
+            <p>The expression level of this gene in different brain regions of human:</p>
+                <img src="../static/img/key-brain-human.png"/>
+            <p>The expression level of this gene in different brain regions of mouse:</p>
+                <img src="../static/img/key-brain-mouse.png"/>
+            <p>The correlation between this gene and addiction:</p>
+                <img src="../static/img/key-correlation.png"/>
+            <p>Literature on the relationship between this gene and addiction:</p>
+                <img src="../static/img/key-literature.png"/>
+        </div>
+    </div>
+
+    <div id="part5">
+        <div class="content-head">5. Download:</div>
+        <div id="part5-1">
+            <div class="content-sub-head">5.1 Transcriptome results download:</div>
+            <p>Users can choose species, addictive drugs, brain regions, datasets and DEGs
+                thresholds to download transcriptome data analysis results.</p>
+                <img src="../static/img/download1.png"/>
+        </div>
+        <div id="part5-2">
+            <div class="content-sub-head">5.2 Methylation results download:</div>
+            <p>Users can choose addictive drugs, tissue / cell, datasets and DMPs
+                thresholds to download methylation data analysis results.</p>
+                <img src="../static/img/download2.png"/>
+        </div>
+    </div>
+</div>
+<div id="footer">Copyright © College of Bioinformatics Science and Technology，Harbin Medical University</div>
+<script src="../static/js/browse_Menu.js"></script>
+<script>
+    $(function () {
+        var supnav = document.getElementById("supnav");
+        var nav = document.getElementById("menu1");
+        var btns = nav.getElementsByTagName("li");
+        var subnavs = nav.getElementsByTagName("div");
+        var paddingbottom = 20;
+        var defaultHeight = 0;
+    })
+
+    function drop(obj, ivalue) {
+        var a = obj.offsetHeight;
+        var speed = (ivalue - obj.offsetHeight) / 8;
+        a += Math.floor(speed);
+        obj.style.height = a + "px";
+    }
+
+    $('#menu1').ready(
+        function () {
+            var i = 1;
+            btns[i].index = i;
+            btns[i].onmouseover = function () {
+                var osubnav = subnavs[0];
+                var sublinks = osubnav.getElementsByTagName("a");
+                if (osubnav.firstChild.tagName == undefined) {
+                    var itarheight = parseInt(osubnav.childNodes[1].offsetHeight) * sublinks.length + paddingbottom;
+                } else {
+                    var itarheight = parseInt(osubnav.firstChild.offsetHeight) * sublinks.length + paddingbottom;
+                }
+                clearInterval(this.itimer);
+                this.itimer = setInterval(function () {
+                        drop(osubnav, itarheight);
+                    },
+                    30);
+            };
+            btns[i].onmouseout = function () {
+                var osubnav = subnavs[0];
+                clearInterval(this.itimer);
+                this.itimer = setInterval(function () {
+                        drop(osubnav, defaultHeight);
+                    },
+                    30);
+            };
+        }
+    );
+
+    $('#menu1').ready(
+        function () {
+            var i = 4;
+            btns[i].index = i;
+            btns[i].onmouseover = function () {
+                var osubnav = subnavs[1];
+                var sublinks = osubnav.getElementsByTagName("a");
+                if (osubnav.firstChild.tagName == undefined) {
+                    var itarheight = parseInt(osubnav.childNodes[1].offsetHeight) * sublinks.length + paddingbottom;
+                } else {
+                    var itarheight = parseInt(osubnav.firstChild.offsetHeight) * sublinks.length + paddingbottom;
+                }
+                clearInterval(this.itimer);
+                this.itimer = setInterval(function () {
+                        drop(osubnav, itarheight);
+                    },
+                    30);
+            };
+            btns[i].onmouseout = function () {
+                var osubnav = subnavs[1];
+                clearInterval(this.itimer);
+                this.itimer = setInterval(function () {
+                        drop(osubnav, defaultHeight);
+                    },
+                    30);
+            };
+        }
+    );
+</script>
+</body>
+</html>

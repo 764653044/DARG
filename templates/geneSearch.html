@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gene_Search</title>
+    <link rel="stylesheet" type="text/css" href="http://127.0.0.1:8000/static/plugins/bootstrap-3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="http://127.0.0.1:8000/static/css/global.css"/>
+    <script type="text/javascript" src="http://127.0.0.1:8000/static/js/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="http://127.0.0.1:8000/static/plugins/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+    <style>
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+            background-color: transparent;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        th {
+            border: 1px solid #ddd !important;
+            text-align: center;
+            height: 50px;
+            line-height: 50px;
+            font-size: 15px;
+        }
+
+        #search_result, #pagination {
+            display: none;
+        }
+
+        .search-box-first {
+            width: 400px;
+            display: block;
+            height: 50px;
+            margin: -150px 0 180px 400px;
+            text-align: center;
+            font-size: 15px;
+            color: #555555;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+        }
+
+        .search-box {
+            {#float: left;#}
+            width: 300px;
+            margin: 20px 0 0 450px;
+            display: block;
+            height: 36px;
+            font-size: 15px;
+            color: #555555;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+        }
+
+        .search_button-first {
+            margin: -330px 400px 0 50px;
+            height: 50px;
+            width: 50px;
+        }
+
+        .search_button {
+            height: 36px;
+            margin: 20px 450px 0 0;
+        }
+
+        #expression_table tr th:nth-child(9) {
+            display: none;
+        }
+
+        .search-content {
+            height: 600px;
+        }
+
+        .Search-prompt-information {
+            font-size: 20px;
+            margin: 200px 0 200px 370px;
+            width: 800px;
+        {#text-align: center;#}
+        }
+
+        .title {
+            width: 1200px;
+            margin: 25px auto;
+            padding: 0 50px;
+            height: 36px;
+            font-size: 17px;
+            font-weight: bold;
+            line-height: 36px;
+            background-image: linear-gradient(#d5e4f7, #f9fafb);
+            border: 1px solid #cdc5bf;
+            border-radius: 13px;
+        }
+
+        .notext {
+            font-size: 24px;
+            margin: 50px auto;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .browse{
+            z-index: 3;
+        }
+    </style>
+</head>
+<body>
+<div id="head">
+    <img src="../static/img/logo.png" alt="Logo"/>
+    <div id="menu1">
+        <ul id="supnav">
+            <li><a href="/index/"><span class="glyphicon glyphicon-home"></span>Home</a></li>
+            <li class="active"><a><span class="glyphicon glyphicon-search"></span>Search<span class="caret"></span></a>
+                <div class="browse" id="search">
+                    <a href="/datasetSearch/">Transcriptome data Search</a>
+                    <a href="/geneSearch/">Gene Search</a>
+                    <a href="/methylationSearch/">Methylation data Search</a>
+                </div>
+            </li>
+            <li><a href="/upload/"><span class="glyphicon glyphicon-cloud-upload"></span>Analyse</a></li>
+            <li><a href="/help/"><span class="glyphicon glyphicon-file"></span>Help</a></li>
+            <li><a><span class="glyphicon glyphicon-download-alt"></span>Download<span class="caret"></span></a>
+                <div class="browse">
+                    <a href="/download/">Transcriptome results</a>
+                    <a href="/methylationdownload/">Methylation results</a>
+                </div>
+            </li>
+            <li><a href="/contact/"><span class="glyphicon glyphicon-earphone"></span>Contact us</a></li>
+        </ul>
+    </div>
+</div>
+
+<div class="container {% if gene1 %}{% else %}search-content{% endif %}" id="background">
+
+    <form method="get">
+        <div class="Search-prompt-information" {% if gene1 %}hidden{% endif %}>
+                Obtaining the differential status of a gene, you can enter the gene name.
+            </div>
+        <div class="input-group">
+
+            <input type="text" name="gene" class="{% if gene1 %}search-box{% else %}search-box-first{% endif %}"
+                   placeholder="Search for..."
+                   {% if gene1 %}value="{{ gene1 }}{% endif %}">
+
+            <span class="input-group-btn">
+                        <button class="btn btn-default {% if gene1 %}search_button{% else %}search_button-first{% endif %}"
+                                type="submit" id="search_button">
+                            <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                        </button>
+                      </span>
+
+        </div>
+    </form>
+    <div class="{% if gene1 %}show{% else %}hidden{% endif %}">
+    <div class="title">Differential methylation probes results</div>
+    <div class="{% if methylation_data %}hidden{% endif %} notext">No differentialy methylated positions with {{ gene1 }} gene</div></div>
+    <div class="panel panel-default {% if methylation_data %}show{% endif %}" id="search_result">
+        <!-- Table -->
+        <table id="methylation_table">
+            <thead>
+            <tr>
+                <th>Probe ID</th>
+                <th>logFC</th>
+                <th>P.Value</th>
+                <th>deltaBeta</th>
+                <th>gene</th>
+                <th>feature</th>
+                <th>Drug</th>
+                <th>tissue/cell</th>
+                <th>Dataset</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for obj in methylation %}
+                <tr>
+                    {% for obj2 in obj %}
+                            <th>{{ obj2}}</th>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <div class="{% if gene1 %}show{% else %}hidden{% endif %}">
+    <div class="title">Differential expression results</div>
+    <div class="{% if table_list %}hidden{% endif %} notext">No differentialy expression results with {{ gene1 }} gene</div></div>
+    <div class="panel panel-default {% if table_list %}show{% endif %}" id="search_result">
+        <!-- Table -->
+        <table id="expression_table">
+            <thead>
+            <tr>
+                <th>Gene</th>
+                <th>log2FoldChange</th>
+                <th>P.Value</th>
+                <th>adj.P.Val</th>
+                <th>Species</th>
+                <th>Drug</th>
+                <th>Area</th>
+                <th>Dataset</th>
+                <th>table_name</th>
+{#                <th>link</th>#}
+            </tr>
+            </thead>
+            <tbody>
+            {% for obj in current_page %}
+                <tr>
+                    {% for obj2 in obj %}
+                            <th>{{ obj2}}</th>
+                    {% endfor %}
+{#                            <th><a class="btn btn-success link">#}
+{#                            <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>#}
+{#                            </a></th>#}
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+
+    <nav aria-label="Page navigation" class="{% if table_list %}show{% endif %}" id="pagination">
+        <ul class="pagination">
+            {#              上一页#}
+            {% if current_page.has_previous %}
+                <li>
+                    <a id="First"
+                       href="?gene={{ gene1 }}&page=1"
+                       aria-label="First">
+                        <span aria-hidden="true">First</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="Previous"
+                       href="?gene={{ gene1 }}&page={{ current_page.previous_page_number }}"
+                       aria-label="Previous">
+                        <span aria-hidden="true">Previous</span>
+                    </a>
+                </li>
+            {% else %}
+                {#            如果没有上一页了，就把标签禁止，且没有连接#}
+                <li class="disabled">
+                    <a href="" aria-label="First">
+                        <span aria-hidden="true">First</span>
+                    </a>
+                </li>
+                <li class="disabled">
+                    <a href="" aria-label="Previous">
+                        <span aria-hidden="true">Previous</span>
+                    </a>
+                </li>
+
+            {% endif %}
+
+            {#              中间的页码#}
+            {% for page in page_range %}
+                {#                如果循环的页码等于当前的页码，就添加active#}
+                {% if current_page_num == page %}
+                    <li class="active"><a class="page1"
+                                          href="?gene={{ gene1 }}&page={{ page }}">{{ page }}</a>
+                    </li>
+                {% else %}
+                    <li><a class="page1"
+                           href="?gene={{ gene1 }}&page={{ page }}">{{ page }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {#              下一页#}
+            {% if current_page.has_next %}
+
+                <li>
+                    <a id="Next"
+                       href="?gene={{ gene1 }}&page={{ current_page.next_page_number }}"
+                       aria-label="Next">
+                        {#                <a id="Next" aria-label="Next">#}
+                        <span aria-hidden="true">Next</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="Last"
+                       href="?gene={{ gene1 }}&page={{ paginator.num_pages }}"
+                       aria-label="Last">
+                        {#                <a id="Last" aria-label="Last">#}
+                        <span aria-hidden="true">Last</span>
+                    </a>
+                </li>
+            {% else %}
+                {#            如果没有下一页了，就把标签禁止，且没有连接#}
+                <li class="disabled">
+                    <a href="" aria-label="Next">
+                        <span aria-hidden="true">Next</span>
+                    </a>
+                </li>
+                <li class="disabled">
+                    <a href="" aria-label="Last">
+                        <span aria-hidden="true">Last</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+<div id="footer">Copyright © College of Bioinformatics Science and Technology，Harbin Medical University</div>
+<script src="http://127.0.0.1:8000/static/js/browse_Menu.js"></script>
+<script>
+    $(function () {
+        $('#methylation_table tbody tr th:nth-child(5)').css("color", "#337ab7");
+        $('#methylation_table tbody tr th:nth-child(5)').css('cursor', 'pointer');
+        $('#methylation_table tbody tr th:nth-child(5)').click(function () {
+            var gene_name = $(this).text();
+            var Drug = $(this).parent().children().eq(6).text();
+            var Area = $(this).parent().children().eq(7).text();
+            Area = Area.replace(" ", "")
+            var Dataset = $(this).parent().children().eq(8).text();
+            var href_data = '/methylationSearch/DMP/gene/?a='+Drug+'&b='+Area+'&c='+Dataset+'&gene=' + gene_name
+            $(location).attr("href", href_data);
+        })
+
+        $('#expression_table tbody tr th:nth-child(1)').css("color", "#337ab7");
+        $('#expression_table tbody tr th:nth-child(1)').css('cursor', 'pointer');
+        $('#expression_table tbody tr th:nth-child(1)').click(function () {
+            var gene_name = $(this).text();
+            var table_name = $(this).parent().children().eq(8).text();
+            table_name = table_name.split("_");
+            var href_data = '/datasetSearch/DEGs/gene/?a=' + table_name[0] + '&b=' + table_name[1] + '&c=' + table_name[2] + '&d=' + table_name[3] + '&gene=' + gene_name
+            $(location).attr("href", href_data);
+        })
+
+        var supnav = document.getElementById("supnav");
+        var nav = document.getElementById("menu1");
+        var btns = nav.getElementsByTagName("li");
+        var subnavs = nav.getElementsByTagName("div");
+        var paddingbottom = 20;
+        var defaultHeight = 0;
+    })
+
+    function drop(obj, ivalue) {
+        var a = obj.offsetHeight;
+        var speed = (ivalue - obj.offsetHeight) / 8;
+        a += Math.floor(speed);
+        obj.style.height = a + "px";
+    }
+
+    $('#menu1').ready(
+        function () {
+            var i = 1;
+            btns[i].index = i;
+            btns[i].onmouseover = function () {
+                var osubnav = subnavs[0];
+                var sublinks = osubnav.getElementsByTagName("a");
+                if (osubnav.firstChild.tagName == undefined) {
+                    var itarheight = parseInt(osubnav.childNodes[1].offsetHeight) * sublinks.length + paddingbottom;
+                } else {
+                    var itarheight = parseInt(osubnav.firstChild.offsetHeight) * sublinks.length + paddingbottom;
+                }
+                clearInterval(this.itimer);
+                this.itimer = setInterval(function () {
+                        drop(osubnav, itarheight);
+                    },
+                    30);
+            };
+            btns[i].onmouseout = function () {
+                var osubnav = subnavs[0];
+                clearInterval(this.itimer);
+                this.itimer = setInterval(function () {
+                        drop(osubnav, defaultHeight);
+                    },
+                    30);
+            };
+        }
+    );
+
+    $('#menu1').ready(
+        function () {
+            var i = 4;
+            btns[i].index = i;
+            btns[i].onmouseover = function () {
+                var osubnav = subnavs[1];
+                var sublinks = osubnav.getElementsByTagName("a");
+                if (osubnav.firstChild.tagName == undefined) {
+                    var itarheight = parseInt(osubnav.childNodes[1].offsetHeight) * sublinks.length + paddingbottom;
+                } else {
+                    var itarheight = parseInt(osubnav.firstChild.offsetHeight) * sublinks.length + paddingbottom;
+                }
+                clearInterval(this.itimer);
+                this.itimer = setInterval(function () {
+                        drop(osubnav, itarheight);
+                    },
+                    30);
+            };
+            btns[i].onmouseout = function () {
+                var osubnav = subnavs[1];
+                clearInterval(this.itimer);
+                this.itimer = setInterval(function () {
+                        drop(osubnav, defaultHeight);
+                    },
+                    30);
+            };
+        }
+    );
+</script>
+</body>
+</html>

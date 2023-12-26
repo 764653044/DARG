@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search</title>
+    <link rel="stylesheet" type="text/css" href="http://127.0.0.1:8000/static/plugins/bootstrap-3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="http://127.0.0.1:8000/static/css/global.css"/>
+    <script type="text/javascript" src="http://127.0.0.1:8000/static/js/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="http://127.0.0.1:8000/static/plugins/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+    <style>
+        .navbar {
+            border-radius: 0;
+        }
+
+        {##search_result, #pagination{#}
+        {#    display: none;}#}
+
+        select{
+            text-align: center;
+        }
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+            background-color: transparent;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        th{
+            border: 1px solid #ddd !important;
+            text-align: center;
+            height: 50px;
+            line-height: 50px;
+            font-size: 15px;
+        }
+
+        #key_button{
+            margin: 0 0 0 -200px;
+            background-color: #f7e4e4;
+        }
+
+        .info-box {
+            position: absolute;
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            display: none;
+        }
+
+        .th-container {
+            display: flex;
+            align-items: center; /* 垂直居中对齐 */
+        }
+
+        .text {
+            flex-grow: 1; /* 文字占据剩余空间 */
+        }
+
+        .sortSpan {
+            display: block; /* 竖向排列 */
+            margin-left: 5px; /* 可以根据需要调整间距 */
+            color: #d8d2d8;
+        }
+
+        /* 使用 CSS Flexbox 布局垂直排列两个<span>元素 */
+        .sortSpan-container {
+            display: flex;
+            flex-direction: column; /* 垂直排列 */
+            margin: 0 10px 0 -30px;
+            {#margin-left: -5px; /* 可以根据需要调整间距 */#}
+        }
+
+        #Information {
+            font-size: 24px;
+            margin: 50px auto;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div id="head">
+    <img src="http://127.0.0.1:8000/static/img/logo.png" alt="Logo"/>
+    <div id="menu1">
+        <ul id="supnav">
+            <li><a href="/index/"><span class="glyphicon glyphicon-home"></span>Home</a></li>
+            <li class="active"><a><span class="glyphicon glyphicon-search"></span>Search<span class="caret"></span></a>
+                <div class="browse" id="search">
+                    <a href="/datasetSearch/">Transcriptome data Search</a>
+                    <a href="/geneSearch/">Gene Search</a>
+                    <a href="/methylationSearch/">Methylation data Search</a>
+                </div>
+            </li>
+            <li><a href="/upload/"><span class="glyphicon glyphicon-cloud-upload"></span>Analyse</a></li>
+            <li><a href="/help/"><span class="glyphicon glyphicon-file"></span>Help</a></li>
+            <li><a><span class="glyphicon glyphicon-download-alt"></span>Download<span class="caret"></span></a>
+                <div class="browse">
+                    <a href="/download/">Transcriptome results</a>
+                    <a href="/methylationdownload/">Methylation results</a>
+                </div>
+            </li>
+            <li><a href="/contact/"><span class="glyphicon glyphicon-earphone"></span>Contact us</a></li>
+        </ul>
+    </div>
+</div>
+<div class="container" id="background">
+    <div class="panel panel-default" id="search_result">
+        <!-- Default panel contents -->
+        {#         class="panel-heading"#}
+        <div style="height: 50px; border-bottom: 1px solid;color: #333;background-color: #f5f5f5;border-color: #ddd;">
+
+            {% if strain %}
+                <span style="line-height:50px;font-size: 16px">Differential expression analysis
+                results: {{ search_data1 }}_{{ search_data2 }}_{{ search_data3 }}_{{ search_data4 }}
+                &nbsp;(&nbsp;{{ strain }}&nbsp;)</span>
+            {% else %}
+                <span style="line-height:50px;font-size: 16px">Differential expression analysis
+                results: {{ search_data1 }}_{{ search_data2 }}_{{ search_data3 }}_{{ search_data4 }}</span>
+            {% endif %}
+            <div style="float: right;width: 200px;margin: 8px auto">
+                <form method="get">
+                    <a id="key" {% if search_data0 %}hidden{% else %}show{% endif %}>
+                        <button id="key_button" class="btn btn-default" type="button">KEY GENE</button>
+                    </a>
+                    {#                </form>#}
+                    {#                <form method="get">#}
+                    <div class="input-group" style="float: right;width: 200px;">
+                        <input id="search_filter" type="text" name="filter" class="form-control"
+                               placeholder="Search for..." {% if search_data0 %}value="{{ search_data0 }}{% endif %}">
+
+                        <span class="input-group-btn">
+                        <a id="filter"><button id="filter_search_button" class="btn btn-default submit" type="button">
+                            <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                        </button></a>
+                      </span>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+        <!-- Table -->
+        <table id="degs_table" {% if data %}show{% else %}hidden{% endif %}>
+            <thead>
+            {% if type_dataset == 'limma' %}
+                <tr>
+                    <th>Gene</th>
+                    <th id="sortlogFC">
+                        <div class="th-container">
+                            <span class="text">logFC</span>
+                            <div class="sortSpan-container">
+                                <span id="logFC-top" class="glyphicon glyphicon-triangle-top sortSpan"
+                                      aria-hidden="true"></span>
+                                <span id="logFC-bottom" class="glyphicon glyphicon-triangle-bottom sortSpan"
+                                      aria-hidden="true"></span>
+                            </div>
+                        </div>
+                    </th>
+                    <th>AveExpr</th>
+                    <th>t</th>
+                    {#                        <a><th id="sortPvalue">P.Value</th></a>#}
+                    <th id="sortPvalue">
+                        <div class="th-container">
+                            <span class="text">P.Value</span>
+                            <div class="sortSpan-container">
+                                <span id="Pvalue-top" class="glyphicon glyphicon-triangle-top sortSpan"
+                                      aria-hidden="true"></span>
+                                <span id="Pvalue-bottom" class="glyphicon glyphicon-triangle-bottom sortSpan"
+                                      aria-hidden="true"></span>
+                            </div>
+                        </div>
+                    </th>
+                    <th id="sortadjPvalue">
+                        <div class="th-container">
+                            <span class="text">adj.P.Val</span>
+                            <div class="sortSpan-container">
+                                <span id="adjPvalue-top" class="glyphicon glyphicon-triangle-top sortSpan"
+                                      aria-hidden="true"></span>
+                                <span id="adjPvalue-bottom" class="glyphicon glyphicon-triangle-bottom sortSpan"
+                                      aria-hidden="true"></span>
+                            </div>
+                        </div>
+                    </th>
+                    <th>B</th>
+                    {#                        <th>link</th>#}
+                </tr>
+            {% else %}
+                <tr>
+                    <th>Gene</th>
+                    <th>baseMean</th>
+                    <th id="sortlogFC">
+                        <div class="th-container">
+                            <span class="text">log2FoldChange</span>
+                            <div class="sortSpan-container">
+                                <span id="logFC-top" class="glyphicon glyphicon-triangle-top sortSpan"
+                                      aria-hidden="true"></span>
+                                <span id="logFC-bottom" class="glyphicon glyphicon-triangle-bottom sortSpan"
+                                      aria-hidden="true"></span>
+                            </div>
+                        </div>
+                    </th>
+                    <th>lfcSE</th>
+                    <th>stat</th>
+                    <th id="sortPvalue">
+                        <div class="th-container">
+                            <span class="text">P.Value</span>
+                            <div class="sortSpan-container">
+                                <span id="Pvalue-top" class="glyphicon glyphicon-triangle-top sortSpan"
+                                      aria-hidden="true"></span>
+                                <span id="Pvalue-bottom" class="glyphicon glyphicon-triangle-bottom sortSpan"
+                                      aria-hidden="true"></span>
+                            </div>
+                        </div>
+                    </th>
+                    <th id="sortadjPvalue">
+                        <div class="th-container">
+                            <span class="text">adj.P.Val</span>
+                            <div class="sortSpan-container">
+                                <span id="adjPvalue-top" class="glyphicon glyphicon-triangle-top sortSpan"
+                                      aria-hidden="true"></span>
+                                <span id="adjPvalue-bottom" class="glyphicon glyphicon-triangle-bottom sortSpan"
+                                      aria-hidden="true"></span>
+                            </div>
+                        </div>
+                    </th>
+                    {#                        <th>link</th>#}
+                </tr>
+            {% endif %}
+            </thead>
+            <tbody class="list">
+            {% for obj in current_page %}
+                <tr class="DEGs_list">
+                    {% for obj2 in obj %}
+                        <th>{{ obj2 }}</th>
+                    {% endfor %}
+                    {#                            <th><a class="btn btn-success link">#}
+                    {#                            <span class="glyphicon glyphicon-th-list" aria-hidden="true"></span>#}
+                    {#                            </a></th>#}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="info-box" id="info-box1">This gene is a key gene and may be a potential biomarker
+            for {{ search_data2 }} addiction
+        </div>
+        <div class="info-box" id="info-box2">Screening all key genes</div>
+        <div class="info-box" id="info-box3">There are no key genes at this threshold</div>
+    </div>
+
+    <nav aria-label="Page navigation" class="{% if data %}show{% endif %}" id="pagination"
+         {% if data %}show{% else %}hidden{% endif %}>
+
+        <ul class="pagination">
+            {#              上一页#}
+            {% if current_page.has_previous %}
+                <li>
+                    <a id="First"
+                       {% if sort and search_data0 %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&filter={{ search_data0 }}&p={{ p }}&fc={{ fc }}&sort={{ sort }}&dir={{ dir }}&page=1"{% endif %}
+                       {% if sort and key %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&key={{ key }}&sort={{ sort }}&dir={{ dir }}&page=1"{% endif %}
+                       {% if sort %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&sort={{ sort }}&dir={{ dir }}&page=1"{% endif %}
+                       {% if search_data0 %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&filter={{ search_data0 }}&page=1"{% endif %}
+                       {% if key %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&key={{ key }}&page=1"{% endif %}
+                       href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&page=1"
+                       aria-label="First">
+                        <span aria-hidden="true">First</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="Previous"
+                       {% if sort and search_data0 %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&filter={{ search_data0 }}&p={{ p }}&fc={{ fc }}&sort={{ sort }}&dir={{ dir }}&page={{ current_page.previous_page_number }}"{% endif %}
+                       {% if sort and key %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&key={{ key }}&sort={{ sort }}&dir={{ dir }}&page={{ current_page.previous_page_number }}"{% endif %}
+                       {% if sort %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&sort={{ sort }}&dir={{ dir }}&page={{ current_page.previous_page_number }}"{% endif %}
+                       {% if search_data0 %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&filter={{ search_data0 }}&p={{ p }}&fc={{ fc }}&page={{ current_page.previous_page_number }}"{% endif %}
+                       {% if key %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&key={{ key }}&page={{ current_page.previous_page_number }}"{% endif %}
+                       href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&page={{ current_page.previous_page_number }}"
+                       aria-label="Previous">
+                        <span aria-hidden="true">Previous</span>
+                    </a>
+                </li>
+            {% else %}
+                {#            如果没有上一页了，就把标签禁止，且没有连接#}
+                <li class="disabled">
+                    <a href="" aria-label="First">
+                        <span aria-hidden="true">First</span>
+                    </a>
+                </li>
+                <li class="disabled">
+                    <a href="" aria-label="Previous">
+                        <span aria-hidden="true">Previous</span>
+                    </a>
+                </li>
+
+            {% endif %}
+
+            {#              中间的页码#}
+            {% for page in page_range %}
+                {#                如果循环的页码等于当前的页码，就添加active#}
+                {% if current_page_num == page %}
+                    <li class="active"><a class="page1"
+                                          {% if sort and search_data0 %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&filter={{ search_data0 }}&p={{ p }}&fc={{ fc }}&sort={{ sort }}&dir={{ dir }}&page={{ page }}"{% endif %}
+                                          {% if sort and key %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&key={{ key }}&sort={{ sort }}&dir={{ dir }}&page={{ page }}"{% endif %}
+                                          {% if sort %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&sort={{ sort }}&dir={{ dir }}&page={{ page }}"{% endif %}
+                                          {% if search_data0 %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&filter={{ search_data0 }}&p={{ p }}&fc={{ fc }}&page={{ page }}"{% endif %}
+                                          {% if key %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&key={{ key }}&page={{ page }}"{% endif %}
+                                          href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&page={{ page }}">{{ page }}</a>
+                    </li>
+                {% else %}
+                    <li><a class="page1"
+                           {% if sort and search_data0 %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&filter={{ search_data0 }}&p={{ p }}&fc={{ fc }}&sort={{ sort }}&dir={{ dir }}&page={{ page }}"{% endif %}
+                           {% if sort and key %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&key={{ key }}&sort={{ sort }}&dir={{ dir }}&page={{ page }}"{% endif %}
+                           {% if sort %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&sort={{ sort }}&dir={{ dir }}&page={{ page }}"{% endif %}
+                           {% if search_data0 %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&filter={{ search_data0 }}&p={{ p }}&fc={{ fc }}&page={{ page }}"{% endif %}
+                           {% if key %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&key={{ key }}&page={{ page }}"{% endif %}
+                           href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&page={{ page }}">{{ page }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {#              下一页#}
+            {% if current_page.has_next %}
+
+                <li>
+                    <a id="Next"
+                       {% if sort and search_data0 %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&filter={{ search_data0 }}&p={{ p }}&fc={{ fc }}&sort={{ sort }}&dir={{ dir }}&page={{ current_page.next_page_number }}"{% endif %}
+                       {% if sort and key %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&key={{ key }}&sort={{ sort }}&dir={{ dir }}&page={{ current_page.next_page_number }}"{% endif %}
+                       {% if sort %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&sort={{ sort }}&dir={{ dir }}&page={{ current_page.next_page_number }}"{% endif %}
+                       {% if search_data0 %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&filter={{ search_data0 }}&p={{ p }}&fc={{ fc }}&page={{ current_page.next_page_number }}"{% endif %}
+                       {% if key %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&key={{ key }}&page={{ current_page.next_page_number }}"{% endif %}
+                       href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&page={{ current_page.next_page_number }}"
+                       aria-label="Next">
+                        {#                <a id="Next" aria-label="Next">#}
+                        <span aria-hidden="true">Next</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="Last"
+                       {% if sort and search_data0 %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&filter={{ search_data0 }}&p={{ p }}&fc={{ fc }}&sort={{ sort }}&dir={{ dir }}&page={{ paginator.num_pages }}"{% endif %}
+                       {% if sort and key %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&key={{ key }}&sort={{ sort }}&dir={{ dir }}&page={{ paginator.num_pages }}"{% endif %}
+                       {% if sort %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&sort={{ sort }}&dir={{ dir }}&page={{ paginator.num_pages }}"{% endif %}
+                       {% if search_data0 %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&filter={{ search_data0 }}&p={{ p }}&fc={{ fc }}&page={{ paginator.num_pages }}"{% endif %}
+                       {% if key %}href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&key={{ key }}&page={{ paginator.num_pages }}"{% endif %}
+                       href="?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&page={{ paginator.num_pages }}"
+                       aria-label="Last">
+                        {#                <a id="Last" aria-label="Last">#}
+                        <span aria-hidden="true">Last</span>
+                    </a>
+                </li>
+            {% else %}
+                {#            如果没有下一页了，就把标签禁止，且没有连接#}
+                <li class="disabled">
+                    <a href="" aria-label="Next">
+                        <span aria-hidden="true">Next</span>
+                    </a>
+                </li>
+                <li class="disabled">
+                    <a href="" aria-label="Last">
+                        <span aria-hidden="true">Last</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    <div {% if data %}hidden{% else %}show{% endif %} id="Information">No {{ search_data0 }} found, please change the
+        search content and search again
+    </div>
+</div>
+<div id="footer">Copyright © College of Bioinformatics Science and Technology，Harbin Medical University</div>
+<script>
+    $(function () {
+        {#$('.link').click(function () {#}
+        {#    var gene_name = $(this).parent().parent().children().first().text();#}
+        {#    $.get("/search/", {'gene_name': gene_name});#}
+        {#    var href_data = 'gene/?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&gene=' + gene_name#}
+        {#    $(this).attr("href", href_data);#}
+        {#    $.get("/search/", {'href_data': href_data});})#}
+        if ('{{dir}}' == 'desc') {
+            if ('{{sort}}' == 'Pvalue') {
+                $('#Pvalue-bottom').css("color", "#292729");
+            } else if ('{{sort}}' == 'adjPvalue') {
+                $('#adjPvalue-bottom').css("color", "#292729");
+            } else {
+                $('#logFC-bottom').css("color", "#292729");
+            }
+
+        } else if ('{{dir}}' == 'asc') {
+            if ('{{sort}}' == 'Pvalue') {
+                $('#Pvalue-top').css("color", "#292729");
+            } else if ('{{sort}}' == 'adjPvalue') {
+                $('#adjPvalue-top').css("color", "#292729");
+            } else {
+                $('#logFC-top').css("color", "#292729");
+            }
+        }
+
+        $('#sortPvalue').click(function () {
+            var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&sort=Pvalue&dir=desc'
+            if ('{{search_data0}}' != 'None') {
+                var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&filter={{ search_data0 }}&p={{ p }}&fc={{ fc }}&sort=Pvalue&dir=desc'
+            }
+            if ('{{key}}' == 1) {
+                var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&key=1&sort=Pvalue&dir=desc'
+            }
+            if ('{{dir}}' == 'desc') {
+                var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&sort=Pvalue&dir=asc'
+                if ('{{search_data0}}' != 'None') {
+                    var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&filter={{ search_data0 }}&p={{ p }}&fc={{ fc }}&sort=Pvalue&dir=asc'
+                }
+                if ('{{key}}' == 1) {
+                    var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&key=1&sort=Pvalue&dir=asc'
+                }
+            }
+            $.get("/search/", {'href_data': href_data});
+            $(location).attr("href", href_data);
+        })
+        $('#sortadjPvalue').click(function () {
+            var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&sort=adjPvalue&dir=desc'
+            if ('{{search_data0}}' != 'None') {
+                var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&filter={{ search_data0 }}&p={{ p }}&fc={{ fc }}&sort=adjPvalue&dir=desc'
+            }
+            if ('{{key}}' == 1) {
+                var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&key=1&sort=adjPvalue&dir=desc'
+            }
+            if ('{{dir}}' == 'desc') {
+                var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&sort=adjPvalue&dir=asc'
+                if ('{{search_data0}}' != 'None') {
+                    var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&filter={{ search_data0 }}&p={{ p }}&fc={{ fc }}&sort=adjPvalue&dir=asc'
+                }
+                if ('{{key}}' == 1) {
+                    var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&key=1&sort=adjPvalue&dir=asc'
+                }
+            }
+            $.get("/search/", {'href_data': href_data});
+            $(location).attr("href", href_data);
+        })
+        $('#sortlogFC').click(function () {
+            var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&sort=logFC&dir=desc'
+            if ('{{search_data0}}' != 'None') {
+                var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&filter={{ search_data0 }}&p={{ p }}&fc={{ fc }}&sort=logFC&dir=desc'
+            }
+            if ('{{key}}' == 1) {
+                var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&key=1&sort=logFC&dir=desc'
+            }
+            if ('{{dir}}' == 'desc') {
+                var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&sort=logFC&dir=asc'
+                if ('{{search_data0}}' != 'None') {
+                    var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&filter={{ search_data0 }}&p={{ p }}&fc={{ fc }}&sort=logFC&dir=asc'
+                }
+                if ('{{key}}' == 1) {
+                    var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&key=1&sort=logFC&dir=asc'
+                }
+            }
+            $.get("/search/", {'href_data': href_data});
+            $(location).attr("href", href_data);
+        })
+
+        $('.DEGs_list').each(function () {
+            var name = $(this).children('th:eq(0)').text();
+            var key_genes = [{{ key_genes|safe }}];
+            if (key_genes[0].includes(name)) {
+                $(this).css("background-color", "#f7e4e4");
+
+                {#提示信息#}
+                var triggerElement = $(this).children('th:eq(0)');
+                var infoBox = $('#info-box1');
+                // 鼠标移入事件
+                triggerElement.mouseenter(function (event) {
+                    var position = triggerElement.offset();
+                    var width = triggerElement.width();
+                    var height = triggerElement.height();
+                    var infoBoxWidth = infoBox.width();
+                    var infoBoxHeight = infoBox.height();
+                    var infoBoxLeft = position.left + 200;
+                    var infoBoxTop = position.top + height;
+
+                    // 考虑信息框的宽度，使其右下角对齐触发元素的右下角
+                    infoBoxLeft -= infoBoxWidth - width;
+                    infoBox.css({
+                        left: infoBoxLeft + 'px',
+                        top: infoBoxTop + 'px',
+                        position: 'absolute',
+                    });
+                    infoBox.show();
+                });
+                triggerElement.mouseleave(function () {
+                    infoBox.hide();
+                });
+            }
+        })
+
+        $('#key').mouseenter(function (event) {
+            var position = $('#key').offset();
+            var width = $('#key').width();
+            var height = $('#key').height();
+            {% if key_list %}
+                var infoBoxWidth = $('#info-box2').width();
+                var infoBoxHeight = $('#info-box2').height();
+            {% else %}
+                var infoBoxWidth = $('#info-box3').width();
+                var infoBoxHeight = $('#info-box3').height();
+            {% endif %}
+            var infoBoxLeft = position.left - 50;
+            var infoBoxTop = position.top + height + 10;
+            // 考虑信息框的宽度，使其右下角对齐触发元素的右下角
+            infoBoxLeft -= infoBoxWidth - width;
+            {% if key_list %}
+                $('#info-box2').css({
+                    left: infoBoxLeft + 'px',
+                    top: infoBoxTop + 'px',
+                    position: 'absolute',
+                });
+                $('#info-box2').show();
+                $('#key').mouseleave(function () {
+                    $('#info-box2').hide();
+                });
+            {% else %}
+                $('#info-box3').css({
+                    left: infoBoxLeft + 'px',
+                    top: infoBoxTop + 'px',
+                    position: 'absolute',
+                });
+                $('#info-box3').show();
+                $('#key').mouseleave(function () {
+                    $('#info-box3').hide();
+                });
+            {% endif %}
+        });
+
+    $('#degs_table tbody tr th:nth-child(1)').css("color", "#337ab7");
+    $('#degs_table tbody tr th:nth-child(1)').click(function () {
+        var gene_name = $(this).text();
+        $.get("/search/", {'gene_name': gene_name});
+        var href_data = 'gene/?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&gene=' + gene_name
+        {#$(this).attr("href", href_data);#}
+        $(location).attr("href", href_data);
+        $.get("/search/", {'href_data': href_data});
+    })
+    $('#degs_table tbody tr th:nth-child(1)').css('cursor', 'pointer');
+
+    var supnav = document.getElementById("supnav");
+    var nav = document.getElementById("menu1");
+    var btns = nav.getElementsByTagName("li");
+    var subnavs = nav.getElementsByTagName("div");
+    var paddingbottom = 20;
+    var defaultHeight = 0;
+
+    })
+
+    function drop(obj, ivalue) {
+        var a = obj.offsetHeight;
+        var speed = (ivalue - obj.offsetHeight) / 8;
+        a += Math.floor(speed);
+        obj.style.height = a + "px";
+    }
+
+    $('#menu1').ready(
+        function () {
+            var i = 1;
+            btns[i].index = i;
+            btns[i].onmouseover = function () {
+                var osubnav = subnavs[0];
+                var sublinks = osubnav.getElementsByTagName("a");
+                if (osubnav.firstChild.tagName == undefined) {
+                    var itarheight = parseInt(osubnav.childNodes[1].offsetHeight) * sublinks.length + paddingbottom;
+                } else {
+                    var itarheight = parseInt(osubnav.firstChild.offsetHeight) * sublinks.length + paddingbottom;
+                }
+                clearInterval(this.itimer);
+                this.itimer = setInterval(function () {
+                        drop(osubnav, itarheight);
+                    },
+                    30);
+            };
+            btns[i].onmouseout = function () {
+                var osubnav = subnavs[0];
+                clearInterval(this.itimer);
+                this.itimer = setInterval(function () {
+                        drop(osubnav, defaultHeight);
+                    },
+                    30);
+            };
+        }
+    );
+
+    $('#menu1').ready(
+        function () {
+            var i = 4;
+            btns[i].index = i;
+            btns[i].onmouseover = function () {
+                var osubnav = subnavs[1];
+                var sublinks = osubnav.getElementsByTagName("a");
+                if (osubnav.firstChild.tagName == undefined) {
+                    var itarheight = parseInt(osubnav.childNodes[1].offsetHeight) * sublinks.length + paddingbottom;
+                } else {
+                    var itarheight = parseInt(osubnav.firstChild.offsetHeight) * sublinks.length + paddingbottom;
+                }
+                clearInterval(this.itimer);
+                this.itimer = setInterval(function () {
+                        drop(osubnav, itarheight);
+                    },
+                    30);
+            };
+            btns[i].onmouseout = function () {
+                var osubnav = subnavs[1];
+                clearInterval(this.itimer);
+                this.itimer = setInterval(function () {
+                        drop(osubnav, defaultHeight);
+                    },
+                    30);
+            };
+        }
+    );
+
+    $('#filter').click(function () {
+        var Filter_condition = $('input[name="filter"]').val();
+        var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&filter=' + Filter_condition
+        $('#filter').attr("href", href_data);
+    })
+
+    {#$('#key').click(function () {#}
+    {#    var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&key=1'#}
+    {#    $('#key').attr("href", href_data);})#}
+    {% if key_list %}
+        $('#key').click(function () {
+            var href_data = '?a={{ search_data1 }}&b={{ search_data2 }}&c={{ search_data3 }}&d={{ search_data4 }}&p={{ p }}&fc={{ fc }}&key=1'
+            $('#key').attr("href", href_data);
+        })
+    {% else %}
+        $('#key_button').css("background-color", "#d8d2d8");
+    {% endif %}
+
+    {#禁用回车键#}
+    document.onkeydown = function (e) {
+        //捕捉回车事件
+        var ev = (typeof event != 'undefined') ? window.event : e;
+        if (ev.keyCode == 13 || event.which == 13) {
+            return false;
+        }
+    }
+
+</script>
+{#    <script type="text/javascript" src="http://127.0.0.1:8000/static/js/jquery-3.6.0.min.js"></script>#}
+<script src="http://127.0.0.1:8000/static/js/browse_Menu.js"></script>
+</body>
+</html>

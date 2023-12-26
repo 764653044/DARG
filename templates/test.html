@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gene_Search</title>
+    <link rel="stylesheet" type="text/css" href="http://127.0.0.1:8000/static/plugins/bootstrap-3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="http://127.0.0.1:8000/static/css/global.css"/>
+    <script type="text/javascript" src="http://127.0.0.1:8000/static/js/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="http://127.0.0.1:8000/static/plugins/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+    <style>
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+            background-color: transparent;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        th{
+            border: 1px solid #ddd !important;
+            text-align: center;
+            height: 50px;
+            line-height: 50px;
+            font-size: 15px;
+        }
+        #search_result, #pagination {
+            display: none;
+        }
+        select{
+            text-align-last: center;
+            font-weight: bold;
+        }
+        .search-box-first {
+            width: 400px;
+            display: block;
+            height: 50px;
+            margin: 50px 0 180px 430px;
+            text-align: center;
+            font-size: 15px;
+            color: #555555;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+        }
+        .search-box {
+            margin: 15px 0 15px 450px;
+            width: 270px;
+            display: block;
+            height: 36px;
+            font-size: 15px;
+            color: #555555;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+        }
+        .search_button-first {
+            margin: 98px 430px 0 0;
+            height: 50px;
+            width: 50px;
+        }
+        .search_button {
+            height: 36px;
+            margin: 15px 450px 15px 0;
+        }
+        table tr th:nth-child(9){
+             display: none;
+        }
+        .Search-prompt-information{
+            font-size: 20px;
+            margin: 200px 0 0 500px;
+            width: 400px;
+            {#text-align: center;#}
+        }
+        .search-content{
+            height: 600px;
+        }
+    </style>
+</head>
+<body>
+<div id="head">
+    <div id="menu1">
+        <ul id="supnav">
+            <li><a href="/index/"><span class="glyphicon glyphicon-home"></span>Home</a></li>
+            <li class="active"><a><span class="glyphicon glyphicon-search"></span>Search<span class="caret"></span></a>
+                <div id="browse">
+                    <a href="/datasetSearch/">Dataset-Search</a>
+                    <a href="/geneSearch/">Gene-Search</a>
+                    <a href="/methylationSearch/">Methylation-Search</a>
+                </div>
+            </li>
+            <li><a href="/help/"><span class="glyphicon glyphicon-file"></span>Help</a></li>
+            <li><a href="/download/"><span class="glyphicon glyphicon-download-alt"></span>Download</a></li>
+        </ul>
+    </div>
+</div>
+<div class="container {% if data0 %}{% else %}search-content{% endif %}" id="background">
+{#    <div style="margin: 28px auto;text-align: center;" id="background">#}
+        <form method="get">
+            <div class="input-group">
+                <div class="Search-prompt-information" {% if data0 %}hidden{% endif %}>Choose s addictive drug related diseases</div>
+                <select id="drug" name="drug" class="{% if data0 %}search-box{% else %}search-box-first{% endif %}"
+                         value="{{ drug1 }}">
+                    <option value="Amphetamine-Related Disorders">Amphetamine-Related Disorders</option>
+                    <option value="Cocaine-Related Disorders">Cocaine-Related Disorders</option>
+                    <option value="Heroin Dependence">Heroin Dependence</option>
+                    <option value="Morphine Dependence">Morphine Dependence</option>
+                    <option value="Tobacco Use Disorder">Tobacco Use Disorder</option>
+                </select>
+
+            <span class="input-group-btn">
+                        <button class="btn btn-default {% if data0 %}search_button{% else %}search_button-first{% endif %}"
+                                type="submit" id="search_button">
+                            <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                        </button>
+                      </span>
+            </div>
+        </form>
+    <div class="panel panel-default {% if data0 %}show{% endif %}" id="search_result">
+        <!-- Table -->
+        <table id="literature_table">
+            <thead>
+            <tr>
+                <th>ChemicalName</th>
+                <th>ChemicalID</th>
+                <th>DiseaseName</th>
+                <th>DiseaseID</th>
+                <th>DirectEvidence</th>
+                <th>InferenceGeneSymbol</th>
+                <th>InferenceScore</th>
+                <th>PubMedIDs</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for obj in current_page %}
+                <tr>
+                    {% for obj2 in obj %}
+                            <th>{{ obj2}}</th>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+
+    <nav aria-label="Page navigation" class="{% if data0 %}show{% endif %}" id="pagination">
+        <ul class="pagination">
+            {#              上一页#}
+            {% if current_page.has_previous %}
+                <li>
+                    <a id="First"
+                       href="?drug={{ drug1 }}&page=1"
+                       aria-label="First">
+                        <span aria-hidden="true">First</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="Previous"
+                       href="?drug={{ drug1 }}page={{ current_page.previous_page_number }}"
+                       aria-label="Previous">
+                        <span aria-hidden="true">Previous</span>
+                    </a>
+                </li>
+            {% else %}
+                {#            如果没有上一页了，就把标签禁止，且没有连接#}
+                <li class="disabled">
+                    <a href="" aria-label="First">
+                        <span aria-hidden="true">First</span>
+                    </a>
+                </li>
+                <li class="disabled">
+                    <a href="" aria-label="Previous">
+                        <span aria-hidden="true">Previous</span>
+                    </a>
+                </li>
+
+            {% endif %}
+
+            {#              中间的页码#}
+            {% for page in page_range %}
+                {#                如果循环的页码等于当前的页码，就添加active#}
+                {% if current_page_num == page %}
+                    <li class="active"><a class="page1"
+                                          href="?drug={{ drug1 }}&page={{ page }}">{{ page }}</a>
+                    </li>
+                {% else %}
+                    <li><a class="page1"
+                           href="?drug={{ drug1 }}&page={{ page }}">{{ page }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {#              下一页#}
+            {% if current_page.has_next %}
+
+                <li>
+                    <a id="Next"
+                       href="?drug={{ drug1 }}&page={{ current_page.next_page_number }}"
+                       aria-label="Next">
+                        {#                <a id="Next" aria-label="Next">#}
+                        <span aria-hidden="true">Next</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="Last"
+                       href="?drug={{ drug1 }}&page={{ paginator.num_pages }}"
+                       aria-label="Last">
+                        {#                <a id="Last" aria-label="Last">#}
+                        <span aria-hidden="true">Last</span>
+                    </a>
+                </li>
+            {% else %}
+                {#            如果没有下一页了，就把标签禁止，且没有连接#}
+                <li class="disabled">
+                    <a href="" aria-label="Next">
+                        <span aria-hidden="true">Next</span>
+                    </a>
+                </li>
+                <li class="disabled">
+                    <a href="" aria-label="Last">
+                        <span aria-hidden="true">Last</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+<script src="http://127.0.0.1:8000/static/js/browse_Menu.js"></script>
+<script>
+    $(function () {
+        loadDrug();
+        $('#literature_table tbody tr th:last-child').css("color", "#337ab7");
+        $('#literature_table tbody tr th:last-child').click(function () {
+            var pubmed_id = $(this).text();
+            var href_data = 'https://pubmed.ncbi.nlm.nih.gov/' + pubmed_id
+            $(location).attr("href", href_data);
+        })
+    })
+
+    function loadDrug() {
+        loadSearch(0, 'drug', loadArea);
+    }
+
+    function loadArea() {
+        loadSearch($('#area option:selected').attr('id'), 'area', loadDataset);
+    }
+
+    function loadDataset() {
+        loadSearch($('#dataset option:selected').attr('id'), 'dataset');
+    }
+
+    function loadSearch(pid, selectID, nextLoad) {
+        $('#' + selectID).empty();
+        $.get('/getInfo/', {'pid': pid}, function (result) {
+            var searchList = JSON.parse(result.jareaList);
+            for (var i = 0; i < searchList.length; i++) {
+                var sear = searchList[i];
+                $('#' + selectID).append("<option id='" + sear.pk + "' value='" + sear.fields.areaname + "'>" + sear.fields.areaname + "</option>");
+            }
+            if (nextLoad != null) {
+                nextLoad();
+            }
+        });
+    }
+</script>
+</body>
+</html>
