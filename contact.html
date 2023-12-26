@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AddictionDDA</title>
+    <link rel="stylesheet" type="text/css" href="http://127.0.0.1:8000/static/plugins/bootstrap-3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="http://127.0.0.1:8000/static/css/global.css"/>
+    <script type="text/javascript" src="http://127.0.0.1:8000/static/js/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="http://127.0.0.1:8000/static/plugins/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript"  src="http://127.0.0.1:8000/static/js//highcharts/highcharts.js"></script>
+    <script type="text/javascript"  src="http://127.0.0.1:8000/static/js//highcharts/exporting.js"></script>
+    <script type="text/javascript"  src="http://127.0.0.1:8000/static/js//highcharts/highcharts-zh_CN.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        p{
+            margin: 20px 0;
+        }
+        .container td,p{
+            font-size: 25px;
+        }
+        #teacher_name{
+            margin: 60px auto;
+        }
+        .teacher_information{
+            margin-top: 30px;
+        }
+        #teacher2{
+            margin-bottom: 50px;
+        }
+
+    </style>
+</head>
+
+<body>
+<div id="head">
+    <img src="../static/img/logo.png" alt="Logo"/>
+    <div id="menu1">
+        <ul id="supnav">
+            <li class="activid、"><a href="/index/"><span class="glyphicon glyphicon-home"></span>Home</a></li>
+{#            <li><a href="/search/"><span class="glyphicon glyphicon-eye-open"></span>Search<span class="caret"></span></a>#}
+            <li><a><span class="glyphicon glyphicon-search"></span>Search<span class="caret"></span></a>
+                <div class="browse" id="search">
+                    <a href="/datasetSearch/">Transcriptome data Search</a>
+                    <a href="/geneSearch/">Gene Search</a>
+                    <a href="/methylationSearch/">Methylation data Search</a>
+                </div>
+            </li>
+            <li><a href="/upload/"><span class="glyphicon glyphicon-cloud-upload"></span>Analyse</a></li>
+            <li><a href="/help/"><span class="glyphicon glyphicon-file"></span>Help</a></li>
+
+            <li><a><span class="glyphicon glyphicon-download-alt"></span>Download<span class="caret"></span></a>
+                <div class="browse">
+                    <a href="/download/">Transcriptome results</a>
+                    <a href="/methylationdownload/">Methylation results</a>
+                </div>
+            </li>
+            <li><a href="/contact/"><span class="glyphicon glyphicon-earphone"></span>Contact us</a></li>
+        </ul>
+    </div>
+</div>
+<div class="container" id="background">
+    <p>Feel free to raise any comments, questions, or suggestions regarding this website at any time.</p>
+    <table width=90% align="center" id="teacher_name">
+        <tr>
+            <td align="left">Wan Li</td>
+        </tr>
+        <tr>
+            <td align="left">
+                <table width=90% align="center" class="teacher_information" id="teacher2">
+                    <tr>
+                        <td>College of Bioinformatics Science and Technology</td>
+                    </tr>
+                    <tr>
+                        <td><a href="http://www.hrbmu.edu.cn" target="_blank">Harbin
+                            Medical University, China</a></td>
+                    </tr>
+                    <tr>
+                        <td>Email: liwan@hrbmu.edu.cn</td>
+                    </tr>
+                </table>
+        <tr>
+            <td align="left" id="teacher2">Lina Chen</td>
+        </tr>
+        <tr>
+            <td align="left">
+                <table width=90% align="center" class="teacher_information">
+                    <tr>
+                        <td>College of Bioinformatics Science and Technology</td>
+                    </tr>
+                    <tr>
+                        <td><a href="http://www.hrbmu.edu.cn" target="_blank">Harbin
+                            Medical University, China</a></td>
+                    </tr>
+                    <tr>
+                        <td>Email: chenlina@ems.hrbmu.edu.cn</td>
+                    </tr>
+                </table>
+        </table>
+
+</div>
+<div id="footer">Copyright © College of Bioinformatics Science and Technology，Harbin Medical University</div>
+<script src="../static/js/browse_Menu.js"></script>
+<script>
+    $(function () {
+        var supnav = document.getElementById("supnav");
+        var nav = document.getElementById("menu1");
+        var btns = nav.getElementsByTagName("li");
+        var subnavs = nav.getElementsByTagName("div");
+        var paddingbottom = 20;
+        var defaultHeight = 0;
+
+    })
+
+    function drop(obj, ivalue) {
+        var a = obj.offsetHeight;
+        var speed = (ivalue - obj.offsetHeight) / 8;
+        a += Math.floor(speed);
+        obj.style.height = a + "px";
+    }
+
+    $('#menu1').ready(
+        function () {
+            var i = 1;
+            btns[i].index = i;
+            btns[i].onmouseover = function () {
+                var osubnav = subnavs[0];
+                var sublinks = osubnav.getElementsByTagName("a");
+                if (osubnav.firstChild.tagName == undefined) {
+                    var itarheight = parseInt(osubnav.childNodes[1].offsetHeight) * sublinks.length + paddingbottom;
+                } else {
+                    var itarheight = parseInt(osubnav.firstChild.offsetHeight) * sublinks.length + paddingbottom;
+                }
+                clearInterval(this.itimer);
+                this.itimer = setInterval(function () {
+                        drop(osubnav, itarheight);
+                    },
+                    30);
+            };
+            btns[i].onmouseout = function () {
+                var osubnav = subnavs[0];
+                clearInterval(this.itimer);
+                this.itimer = setInterval(function () {
+                        drop(osubnav, defaultHeight);
+                    },
+                    30);
+            };
+        }
+    );
+
+    $('#menu1').ready(
+        function () {
+            var i = 4;
+            btns[i].index = i;
+            btns[i].onmouseover = function () {
+                var osubnav = subnavs[1];
+                var sublinks = osubnav.getElementsByTagName("a");
+                if (osubnav.firstChild.tagName == undefined) {
+                    var itarheight = parseInt(osubnav.childNodes[1].offsetHeight) * sublinks.length + paddingbottom;
+                } else {
+                    var itarheight = parseInt(osubnav.firstChild.offsetHeight) * sublinks.length + paddingbottom;
+                }
+                clearInterval(this.itimer);
+                this.itimer = setInterval(function () {
+                        drop(osubnav, itarheight);
+                    },
+                    30);
+            };
+            btns[i].onmouseout = function () {
+                var osubnav = subnavs[1];
+                clearInterval(this.itimer);
+                this.itimer = setInterval(function () {
+                        drop(osubnav, defaultHeight);
+                    },
+                    30);
+            };
+        }
+    );
+
+</script>
+</body>
+</html>
